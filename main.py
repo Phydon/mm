@@ -3,35 +3,51 @@ import time
 import random
 import msvcrt
 
+
 def user_exit():
     """Check if the user has pressed 'q' to exit the program."""
-    return msvcrt.kbhit() and msvcrt.getch().decode(errors='ignore').lower() == 'q'
+    return msvcrt.kbhit() and msvcrt.getch().decode(errors="ignore").lower() == "q"
 
-def generate_positions(screen_width, screen_height, count=3):
-    """Generate a list of random screen positions."""
-    return [(random.randint(10, screen_width - 10), random.randint(10, screen_height - 10)) for _ in range(count)]
 
-def move_mouse():
-    """Moves the mouse to random positions at random intervals, checking for user exit."""
+def generate_positions():
+    """Generate a list of random positions in the center of the screen."""
     screen_width, screen_height = pyautogui.size()
-    positions = generate_positions(screen_width, screen_height)
-    
+
+    min_width = int(screen_width * 0.45)
+    max_width = int(screen_width * 0.55)
+    min_height = int(screen_height * 0.45)
+    max_height = int(screen_height * 0.55)
+
+    return [
+        (random.randint(min_width, max_width), random.randint(min_height, max_height))
+        for _ in range(100)
+    ]
+
+
+def activate_mouse():
+    """Moves the mouse to random positions at random intervals and clicks once, while checking for user exit."""
+    positions = generate_positions()
+
     try:
         while True:
             if user_exit():
-                print("\nExiting program...")
                 return
-            
+
             pyautogui.moveTo(*random.choice(positions), duration=0.2)
-            wait_time = random.randint(5, 30)  # Random wait time between 1 and 30 seconds
+            # TODO make sure not to click something clickable
+            time.sleep(0.3)
+            pyautogui.click()
+
+            wait_time = random.randint(5, 30)
             start_time = time.time()
             while time.time() - start_time < wait_time:
                 if user_exit():
-                    print("\nExiting program...")
                     return
-                time.sleep(0.3)  # Check user input more frequently
+                time.sleep(0.3)
+
     except KeyboardInterrupt:
-        print("\nExiting program...")
+        print("Received Ctrl-C ...")
+
 
 if __name__ == "__main__":
-    move_mouse()
+    activate_mouse()
